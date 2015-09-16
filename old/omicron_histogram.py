@@ -4,6 +4,18 @@
 originally written by Laura Nuttall 
 modified by Pat Meyers 
 patrick.meyers@ligo.org
+
+---------
+This code takes a channel and a VCO file (produced by get_imc_vco.py)
+and finds all of the omicron triggers during that time and histograms them
+against the VCO value to see if there are specific VCO values that seem to
+correlate to more omicron glitches than others (these are likely whistles)
+NOTE: currently you must change the "channel" and "vco_files" variables
+in the code itself
+---------
+
+
+
 """
 
 from __future__ import (division, print_function)
@@ -61,7 +73,6 @@ def _read_omicron_trigs(omicron_files, span):
         trigs.extend(filter(lambda row: row.get_peak() in span, trigs2))
     times = []
 
-
     print('%d found' % len(trigs))
     times = trigs.get_peak()
     s = times.size
@@ -71,7 +82,7 @@ def _read_omicron_trigs(omicron_files, span):
 def plot_trig_rates(trigs, spans, channel, files=None, files_to_combine=None):
     if files is not None and files_to_combine is not None:
         final_trigs_to_plot = {}
-        durations = {'combined':0}
+        durations = {'combined': 0}
         combined_trigs = table.new_from_template(trigs[files[0]])
         for f in files_to_combine:
             combined_trigs.extend(trigs[f])
@@ -81,7 +92,7 @@ def plot_trig_rates(trigs, spans, channel, files=None, files_to_combine=None):
                 durations[f] = abs(spans[f])
             else:
                 durations['combined'] += abs(spans[f])
-        final_trigs_to_plot['combined'] = combined_trigs 
+        final_trigs_to_plot['combined'] = combined_trigs
         trigs = final_trigs_to_plot
     else:
         durations = {}
@@ -93,7 +104,7 @@ def plot_trig_rates(trigs, spans, channel, files=None, files_to_combine=None):
     for key in durations.keys():
         # print(len(trigs[key]))
         try:
-            label = str(spans[key][0])+'-'+str(spans[key][-1])
+            label = str(spans[key][0]) + '-' + str(spans[key][-1])
         except KeyError:
             label = 'combined locks'
         if First:
@@ -152,8 +163,9 @@ def _hist_triggers(trigs, amp, times, nbins=100, bin_low=1, bin_high=1):
         peak = trig.get_peak()
     snrs.append(trig.snr)
     freqs.append(trig.peak_frequency)
-    times.append(peak.seconds+peak.nanoseconds*1e-9)
-    f = open('L1-TRIG-TIMES-'+str(span[0])+'-'+str(span[-1])+'.txt', 'w')
+    times.append(peak.seconds + peak.nanoseconds * 1e-9)
+    f = open(
+        'L1-TRIG-TIMES-' + str(span[0]) + '-' + str(span[-1]) + '.txt', 'w')
     for time, snr, freq in zip(times, snrs, freqs):
         f.write('%f\t%f\t%f\n' % (time, snr, freq))
     f.close()
@@ -171,7 +183,7 @@ def plot_vco_hist(amps, spans, channel):
         plot.set_ylabel('Rate [Hz]')
     plot.set_title(channel.replace('_', '\_') +
                    ' omicron glitch histogram')
-    plot.suptitle(str(spans[span][0])+'-'+str(spans[span][-1]))
+    plot.suptitle(str(spans[span][0]) + '-' + str(spans[span][-1]))
     ax = plot.gca()
     plot.save(png)
     plot.close()
@@ -185,7 +197,8 @@ channel = 'L1:GDS-CALIB_STRAIN'
 # get Omicron triggers
 print('Reading DARM triggers', end=' ')
 spans = {}
-vco_files = ['/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1126256591-8100.hdf']
+vco_files = [
+    '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1126256591-8100.hdf']
 
 ifo = channel[0:2]
 # omicron channel directory
@@ -218,9 +231,9 @@ for v in vco_files:
                                         bin_low=2, bin_high=2)
 
 
-plot_trig_rates(trigs, spans, channel+'-ALL', files=None)
+plot_trig_rates(trigs, spans, channel + '-ALL', files=None)
 plot_vco_hist(amp, spans, channel)
-plot_trig_rates(new_trigs, spans, channel+'-WHISTLE', files=None)
+plot_trig_rates(new_trigs, spans, channel + '-WHISTLE', files=None)
 
 # -----------------------------------------------------------------------------
 
@@ -234,6 +247,5 @@ ax.set_yscale('log')
 ax.set_ylabel('Trigger Rate [Hz]')
 ax.set_title('%s - %s' % ('5 min Rate Trend', channel_texname))
 ax.legend(loc='upper left')
-plot.savefig(channel+'-EVENT-RATE-'+str(start) + '-' + str(end - start))
+plot.savefig(channel + '-EVENT-RATE-' + str(start) + '-' + str(end - start))
 plot.close()
-

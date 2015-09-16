@@ -3,10 +3,30 @@ from glue import datafind
 import numpy
 import scipy.signal
 import sys
+"""
+-originally written by Andy Lundgren
+-modified by Pat Meyers
+-patrick.meyers@ligo.org
 
-# originally written by Andy Lundgren
-# modified by Pat Meyers
-# patrick.meyers@ligo.org
+---------------
+This code takes a start time and a duration and
+calculates a "fast" vco channel by fitting the slow
+VCO readback to the faster IMC-F readback on sliding
+45 second scales (since the calibration between the channels
+is not necessarily consistent)
+----------------
+
+takes 3 parameters:
+
+Parameters:
+-----------
+    ifo : str
+        interferometer (e.g. H1)
+    st : int
+        start time
+    dur : int
+        duration
+"""
 
 chan1_pat = '%s:SYS-TIMING_C_FO_A_PORT_11_SLAVE_CFC_FREQUENCY_5'
 chan2_pat = '%s:IMC-F_OUT_DQ'
@@ -64,7 +84,7 @@ def dump_calibrated_data(fname):
         idx1 = max(0, idx - width)
         idx2 = min(idx + width, maxidx)
         coeffs.append(numpy.polyfit(data[idx1:idx2, 0], data[idx1:idx2, 1], 1,
-                      w=weights[idx1 - idx + width:idx2 - idx + width]))
+                                    w=weights[idx1 - idx + width:idx2 - idx + width]))
     coeffs = numpy.array(coeffs)
     times = numpy.arange(len(coeffs)) + 0.5
     connection = datafind.GWDataFindHTTPConnection()
