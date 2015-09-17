@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 
 """Read Omicron triggers, and plot
-originally written by Laura Nuttall 
-modified by Pat Meyers 
+originally written by Laura Nuttall
+modified by Pat Meyers
 patrick.meyers@ligo.org
 
 ---------
@@ -236,18 +236,3 @@ for v in vco_files:
 plot_trig_rates(trigs, spans, channel + '-ALL', files=None)
 plot_vco_hist(amp, spans, channel)
 plot_trig_rates(new_trigs, spans, channel + '-WHISTLE', files=None)
-
-# -----------------------------------------------------------------------------
-
-
-# new_trigs, hist = _hist_triggers(trigs, amp, nbins=100)
-
-rate = trigs[vco_files[0]].event_rate(300, 'snr', [5, 6, 8], operator='>=')
-plot = rate.plot(label='name', marker='o', linestyle='')
-ax = plot.gca()
-ax.set_yscale('log')
-ax.set_ylabel('Trigger Rate [Hz]')
-ax.set_title('%s - %s' % ('5 min Rate Trend', channel_texname))
-ax.legend(loc='upper left')
-plot.savefig(channel + '-EVENT-RATE-' + str(start) + '-' + str(end - start))
-plot.close()
