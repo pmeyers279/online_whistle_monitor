@@ -13,9 +13,6 @@ correlate to more omicron glitches than others (these are likely whistles)
 NOTE: currently you must change the "channel" and "vco_files" variables
 in the code itself
 ---------
-
-
-
 """
 
 from __future__ import (division, print_function)
@@ -34,6 +31,13 @@ from gwpy.plotter import HistogramPlot
 from gwpy.plotter.tex import label_to_latex
 from gwpy.io import nds as ndsio
 from glue.ligolw import table
+
+# ----------- INPUTS -----------#
+vco_files = [
+  '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1126256591-8100.hdf']
+
+channel = 'L1:GDS-CALIB_STRAIN'
+# ------------------------------#
 
 
 def plot_name(channel, start, end, tag, format='png'):
@@ -190,15 +194,13 @@ def plot_vco_hist(amps, spans, channel):
     print('%s written' % png)
 # -----------------------------------------------------------------------------
 
-channel = 'L1:GDS-CALIB_STRAIN'
 
 # -----------------------------------------------------------------------------
 
 # get Omicron triggers
 print('Reading DARM triggers', end=' ')
 spans = {}
-vco_files = [
-    '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1126256591-8100.hdf']
+
 
 ifo = channel[0:2]
 # omicron channel directory
