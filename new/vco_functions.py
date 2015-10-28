@@ -4,16 +4,14 @@ import numpy as np
 from scipy.interpolate import UnivariateSpline
 
 
-def generate_fast_vco(ifo, st, dur, frames=False, fit=True):
+def generate_fast_vco(ifo, segment, frames=False, fit=True):
     """
     Parameters:
     -----------
         ifo : start
             interferometer, e.g. 'L1'
-        st : int
-            start time
-        dur : int
-            duration
+        segment : array like
+            time segment. first entry start second entry end
         frames : bool
             read from frames or nds2
         fit : bool
@@ -24,7 +22,8 @@ def generate_fast_vco(ifo, st, dur, frames=False, fit=True):
     --------
         vco_data : saves file 'L1:IMC-VCO_PREDICTION-st-dur.hdf'
     """
-    et = st + dur
+    st = segment[0]
+    et = segment[1]
     chan1_pat = '%s:SYS-TIMING_C_FO_A_PORT_11_SLAVE_CFC_FREQUENCY_5'
     chan2_pat = '%s:IMC-F_OUT_DQ'
 

@@ -193,31 +193,12 @@ print('Reading DARM triggers', end=' ')
 # starts = [1123856023, 1124004725, 1124037223, 1124042720]
 # ends = [1123856023 + 3672, 1124004725 + 1220, 1124037223 + 1209, 1124042720+793]
 spans = {}
-#vco_file = ['/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1124180001-40332.hdf']
 vco_file = [#'/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1124286797-17608.hdf',
 	    '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1124376361-14911.hdf',
 #	    '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1123856021-3672.hdf',
 	    '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1124443502-20714.hdf',
 	    '/home/meyers/aDQ/Whistles/get_imc_vco/L1-vcoprediction-1124520838-20704.hdf']
-#vco_file = ['../../get_imc_vco/L1-vcoprediction-1117855735-731.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117856749-1458.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117859081-13078.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117872497-7213.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117880779-11035.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117916072-3594.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117931466-8458.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117951006-13047.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1117999425-4033.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118006736-4115.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118016623-20188.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118048123-667.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118053594-14883.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118074077-16642.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118162657-3462.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118170327-11191.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118189212-21121.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118265580-1792.hdf',
-#'../../get_imc_vco/L1-vcoprediction-1118289220-1706.hdf']
+
 
 	    
 channel_texname = channel.replace('_', '\_')
