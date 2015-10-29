@@ -37,7 +37,7 @@ All flags for `make_histograms`:
 * `--trig-dir`
     * **Default** : `/home/detchar/triggers/O1/`
     * Base directory to search for triggers
-        * `/%(ifo)/%(ifo):%(channel)/%(str(st)[0:4])` is currently automatically appended
+        * `/%(ifo)/%(ifo):%(channel)/%(str(st)[0:5])` is currently automatically appended
         to query current set-up, so be careful changing this.
 
 ------------
