@@ -1,13 +1,11 @@
 The function you want is `histogram/make_histograms`
 
-It is configured to search by default for omicron triggers generated for DARM on the detchar account. The simplest use case is on the LLO/LHO cluster
+This function will query the segment database and generate histograms for each lock in between start and end times. It is configured to search by default for omicron triggers generated for DARM on the detchar account. The simplest use case is on the LLO/LHO cluster
 
 ```bash
 ./make_histogram -o L1 -s %(start) -e %(end)
 ```
-Will produce a file titled `L1-GDS-CALIB_STRAIN_VCO-HIST-%(start)-%(duration)`. 
-
-Currently, it is set up to query the segment data base and generate histograms for each lock in between the start and end times. 
+Will produce a file titled `L1-GDS-CALIB_STRAIN_VCO-HIST-%(start)-%(duration).png` in the working directory.
 
 All flags for `make_histograms`:
 
