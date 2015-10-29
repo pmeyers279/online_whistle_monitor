@@ -22,14 +22,14 @@ All flags for `make_histograms`:
     * %(ifo):%(channel)_Omicron is the channel 
         used to search for omicron triggers.
 * `--frames`
-    *  **Default** : False
-    * **True** : read from frames
-    * **False** : read from nds2
+    *  **Default** : 0
+    * **1** : read from frames
+    * **0** : read from nds2
 
 * `--fit-vco`
-    * **Default** : True
-    * **True** : create fast vco by linear fitting with mc-f
-    * **False** : create fast vco channel by spline 
+    * **Default** : 1
+    * **1** : create fast vco by linear fitting with mc-f
+    * **0** : create fast vco channel by spline 
             interpolation on slow vco.
 * `--flag`
     * **Default** : DMT-ANALYSIS_READY:1
