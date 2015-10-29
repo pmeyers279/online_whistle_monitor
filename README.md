@@ -7,6 +7,8 @@ It is configured to search by default for omicron triggers generated for DARM on
 ```
 Will produce a file titled `L1-GDS-CALIB_STRAIN_VCO-HIST-%(start)-%(duration)`. 
 
+Currently, it is set up to query the segment data base and generate histograms for each lock in between the start and end times. 
+
 All flags for `make_histograms`:
 
 * `-s`
