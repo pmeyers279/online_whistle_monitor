@@ -43,7 +43,6 @@ segs = DataQualityFlag.query_dqsegdb(
 
 #seg = Segment(params.st, params.et)
 for seg in segs:
-	print 'FIT GIVES %s' % str(params.fit)
 	vco = generate_fast_vco(params.ifo, seg, frames=params.frames, fit=params.fit)
 	# get list of files that contain omicron triggers
 	# for our times
