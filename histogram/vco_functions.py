@@ -80,7 +80,6 @@ def fit_with_imc(data, imc):
     # but it seems to make no differece
     # Just fit the whole thing at once, to get a single coefficient
     a, b = np.polyfit(data[:, 0], data[:, 1], 1)
-    print "%.1f %u" % (a, b)
 
     # Slide through the data fitting PSL to IMC for data around each sample
     coeffs = []

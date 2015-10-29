@@ -38,8 +38,6 @@ def get_omicron_files(ifo, segment, trig_dir=None, channel='GDS-CALIB_STRAIN'):
 def plot_vco_hist(vco_trigs, segment, channel):
     start = segment[0]
     end = segment[1]
-    print(start)
-    print(end)
     png = plot_name(channel, start, end, 'VCO-HIST', format='png')
     plot = HistogramPlot(
         vco_trigs, weights=1. / abs(int(end) - int(start)), bins=100, log=True)
