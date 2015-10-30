@@ -40,21 +40,48 @@ if not params.st and params.et:
 segs = DataQualityFlag.query_dqsegdb(
     flag, params.st, params.et, url='https://segments.ligo.org')
 
+segs.write('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
+
 
 # seg = Segment(params.st, params.et)
 for seg in segs:
-    vco = generate_fast_vco(
-        params.ifo, seg, frames=params.frames, fit=params.fit)
-    # get list of files that contain omicron triggers
-    # for our times
-    files = get_omicron_files(
-        params.ifo, seg, channel=params.channel, trig_dir=params.trig_dir)
-    # get omicron triggers
-    # and their times
-    trigs, times, s = read_omicron_trigs(files, seg)
+    if int(seg[1]) - int(seg[0]) > 1e4:
+        vco_trigs = []
+        st = seg[0]
+        while st < params.et:
+            et = min(st + 1e4, params.et)
+            seg_new = Segment(st, et)
+            st += 1e4
+            vco = generate_fast_vco(
+                params.ifo, seg, frames=params.frames, fit=params.fit)
+            # get list of files that contain omicron triggers
+            # for our times
+            files = get_omicron_files(
+                params.ifo, seg, channel=params.channel, trig_dir=params.trig_dir)
+            # get omicron triggers
+            # and their times
+            trigs, times, s = read_omicron_trigs(files, seg)
 
-    # get VCO frequencies at times of omicron triggers
-    vco_trigs = get_vco_trigs(vco, times, channel=params.channel)
+            # get VCO frequencies at times of omicron triggers
+            vco_trigs_temp = get_vco_trigs(vco, times, channel=params.channel)
+            for vco_trig in vco_trigs_temp:
+                vco_trigs.append(vco_trig)
+            # plot VCO triggers in histogram
+        plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
 
-    # plot VCO triggers in histogram
-    plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
+    else:
+        vco = generate_fast_vco(
+            params.ifo, seg, frames=params.frames, fit=params.fit)
+        # get list of files that contain omicron triggers
+        # for our times
+        files = get_omicron_files(
+            params.ifo, seg, channel=params.channel, trig_dir=params.trig_dir)
+        # get omicron triggers
+        # and their times
+        trigs, times, s = read_omicron_trigs(files, seg)
+
+        # get VCO frequencies at times of omicron triggers
+        vco_trigs = get_vco_trigs(vco, times, channel=params.channel)
+
+        # plot VCO triggers in histogram
+        plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
