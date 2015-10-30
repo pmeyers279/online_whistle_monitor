@@ -32,28 +32,20 @@ def generate_fast_vco(ifo, segment, frames=False, fit=True):
         cache = connection.find_frame_urls(
             ifo[0], '%s_R' % ifo, st, et, urltype='file')
         if fit:
-            print "Get IMC"
             imc = TimeSeries.read(cache, chan2_pat % ifo, st, et)
-	else:
-	    imc = TimeSeries.read(cache, chan2_pat % ifo, st, st+1)
-        print "Get psl"
+        else:
+            imc = TimeSeries.read(cache, chan2_pat % ifo, st, st + 1)
         pslvco = TimeSeries.read(cache, chan1_pat % ifo, st, et + 1)
     else:
         if fit:
-            print "Get IMC"
             imc = TimeSeries.fetch(chan2_pat % ifo, st, et)
-	else:
-	    imc = TimeSeries.fetch(chan2_pat % ifo, st, st+1)
-        print "Get psl"
+        else:
+            imc = TimeSeries.fetch(chan2_pat % ifo, st, st + 1)
         pslvco = TimeSeries.fetch(chan1_pat % ifo, st, et + 1)
 
-    print "Downsample psl"
     pslvco = pslvco[16 + 8::16]
 
-    print "Saving"
-
     if fit:
-        print "Downsample imc"
         imc_srate = int(imc.sample_rate.value)
         imc2 = imc[imc_srate / 2::imc_srate]
         data = np.array((imc2.value, pslvco.value)).T
@@ -103,7 +95,6 @@ def fit_with_imc(data, imc):
 
 
 def interp_spline(pslvco, srate=256):
-    fvco = UnivariateSpline(np.arange(len(pslvco))+0.5, pslvco, k=3)
-    vco_interp = fvco(np.arange(srate*len(pslvco))/float(srate))
+    fvco = UnivariateSpline(np.arange(len(pslvco)) + 0.5, pslvco, k=3)
+    vco_interp = fvco(np.arange(srate * len(pslvco)) / float(srate))
     return vco_interp
-

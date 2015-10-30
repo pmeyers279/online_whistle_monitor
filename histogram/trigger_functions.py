@@ -29,10 +29,31 @@ def get_omicron_files(ifo, segment, trig_dir=None, channel='GDS-CALIB_STRAIN'):
     dirs = np.arange(int(dir1), int(dirend) + 1)
     files = []
     for directory in dirs:
-    	print('looking for trigs in %s/%d' % (trig_dir, directory))
-        files_to_add = sorted(glob.glob('%s/%d/*.xml.gz' % (trig_dir, directory)))
+        print('looking for trigs in %s/%d' % (trig_dir, directory))
+        files_to_add = sorted(
+            glob.glob('%s/%d/*.xml.gz' % (trig_dir, directory)))
         files.append(files_to_add)
     return files
+
+
+def get_all_vco_triggers(omicron_files, save=False, frames=False, fit=True,
+                         channel='GDS-CALIB_STRAIN'):
+
+    amps = []
+    for f in omicron_files:
+        # parse file name
+        ifo = f.split('-')[0]
+        st = f.split('-')[2]
+        dur = f.split('-')[3]
+        et = st + dur
+
+        # generate fast vco
+        vco = generate_fast_vco(ifo, Segment(st, et), frames=frames, fit=fit)
+        trigs, t, s = read_omicron_trigs(f, Segment(st, et))
+        vtrigs = get_vco_trigs(vco, t, channel=channel)
+        for vtrig in vtrigs:
+            amps.append(vtrig)
+    return amps
 
 
 def plot_vco_hist(vco_trigs, segment, channel):
