@@ -1,0 +1,6 @@
+#!/bin/bash
+st=`tconvert yesterday 00:00 UTC`
+et=`tconvert today 00:00 UTC`
+
+make_histograms -s $st -e $et -o L1 --frames True
+make_histograms -s $st -e $et -o L1 --frames True -c LSC-REFL_SERVO_ERR_OUT_DQ
