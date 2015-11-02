@@ -5,6 +5,7 @@ import glob
 import numpy as np
 
 from gwpy.table.lsctables import SnglBurstTable
+from gwpy.segments import Segment
 from gwpy.plotter import HistogramPlot
 from glue.ligolw import table
 from vco_functions import *
@@ -29,30 +30,31 @@ def get_omicron_files(ifo, segment, trig_dir=None, channel='GDS-CALIB_STRAIN'):
     dirs = np.arange(int(dir1), int(dirend) + 1)
     files = []
     for directory in dirs:
-        print('looking for trigs in %s/%d' % (trig_dir, directory))
+        #print('looking for trigs in %s/%d' % (trig_dir, directory))
         files_to_add = sorted(
             glob.glob('%s/%d/*.xml.gz' % (trig_dir, directory)))
-        files.append(files_to_add)
+	for f in files_to_add:
+            files.append(f)
     return files
 
 
-def get_all_vco_triggers(omicron_files, save=False, frames=False, fit=True,
+def get_all_vco_triggers(omicron_files,seg,frames=False, fit=True,
                          channel='GDS-CALIB_STRAIN'):
-
     amps = []
     for f in omicron_files:
+	f2 = f.split('/')[-1]
         # parse file name
-        ifo = f.split('-')[0]
-        st = f.split('-')[2]
-        dur = f.split('-')[3]
+        ifo = f2.split('-')[0]
+        st = int(f2.split('-')[2])
+        dur = int(f2.split('-')[3].split('.')[0])
         et = st + dur
-
-        # generate fast vco
-        vco = generate_fast_vco(ifo, Segment(st, et), frames=frames, fit=fit)
-        trigs, t, s = read_omicron_trigs(f, Segment(st, et))
-        vtrigs = get_vco_trigs(vco, t, channel=channel)
-        for vtrig in vtrigs:
-            amps.append(vtrig)
+	if st > int(seg[0]) and et < int(seg[1]):
+            # generate fast vco
+            vco = generate_fast_vco(ifo, Segment(st, et), frames=0, fit=fit)
+            trigs, t, s = read_omicron_trigs(f, Segment(st, et))
+            vtrigs = get_vco_trigs(vco, t, channel=channel)
+            for vtrig in vtrigs:
+                amps.append(vtrig)
     return amps
 
 
@@ -68,11 +70,11 @@ def plot_vco_hist(vco_trigs, segment, channel):
     plot.suptitle(str(segment[0]) + '-' + str(segment[-1]))
     plot.savefig(png)
     plot.close()
-    print('%s written' % png)
+    #print('%s written' % png)
 
 
 def get_vco_trigs(vco, times, channel='GDS-CALIB_STRAIN'):
-    print('Finding mean values of %s' % channel)
+    #print('Finding mean values of %s' % channel)
     s = times.size
     amp = np.zeros(s)
     for i, t in enumerate(times):
@@ -83,22 +85,28 @@ def get_vco_trigs(vco, times, channel='GDS-CALIB_STRAIN'):
             (t - vco.times.value[0] + 0.01) * vco.sample_rate.value)
         temp = vco[idx1:idx2]
         amp[i] = ((temp.mean().value) - 79000000) / 1.e3
-        print('    Processed trigger %d/%d' % (i + 1, s), end='\r')
-    print('    Processed trigger %d/%d' % (s, s))
+    #    print('    Processed trigger %d/%d' % (i + 1, s), end='\r')
+    #print('    Processed trigger %d/%d' % (s, s))
     return amp
 
 
 def read_omicron_trigs(omicron_files, segment):
     """
     """
-    trigs1 = SnglBurstTable.read(omicron_files[0], format='ligolw')
+    if isinstance(omicron_files, list):
+	##print('HI THERE PAT. FUCK YOU!!!')
+    	trigs1 = SnglBurstTable.read(omicron_files[0], format='ligolw')
+    else:
+	# i'm being lazy so i don't have to rewrite code below
+	omicron_files = [omicron_files]
+    	trigs1 = SnglBurstTable.read(omicron_files, format='ligolw')
     trigs = table.new_from_template(trigs1)
     for omicron_file in omicron_files:
         trigs2 = table.new_from_template(trigs1)
         trigs2 = SnglBurstTable.read(omicron_file, format='ligolw')
         trigs.extend(filter(lambda row: row.get_peak() in segment, trigs2))
     times = []
-    print('%d found' % len(trigs))
+    #print('%d found' % len(trigs))
     times = trigs.get_peak()
     s = times.size
     return trigs, times, s
