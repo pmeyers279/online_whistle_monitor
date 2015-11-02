@@ -51,7 +51,6 @@ for seg in segs:
         params.ifo, seg, channel=params.channel, trig_dir=params.trig_dir)
     # get omicron triggers
     # and their times
-    vco_trigs = get_all_vco_triggers(files, save=False, frames=params.frames,
-                                     fit=params.fit, channel=params.channel)
+    vco_trigs = get_all_vco_triggers(files, seg)
     # plot VCO triggers in histogram
     plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
