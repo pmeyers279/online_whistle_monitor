@@ -39,7 +39,7 @@ def make_html_page(segs, st, et, ifo, list='channels.txt'):
         channel = channel.replace('-','_')
         channel = channel.replace(':', '-')
 	page.div()
-        page.h3("%s:%s Omicron triggers vs. VCO Histogram" % (ifo,channel), align='center')
+        page.h3("%s:%s" % (ifo,channel), align='center')
         for seg in segs:
             page.div()
             page.img(src="%s-%s_VCO-HIST-%d-%d.png" %
