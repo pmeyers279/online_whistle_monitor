@@ -55,3 +55,5 @@ for seg in segs:
                                      fit=params.fit, channel=params.channel)
     # plot VCO triggers in histogram
     plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
+
+make_html_page(segs, channel=params.channel)
