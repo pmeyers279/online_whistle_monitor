@@ -54,3 +54,5 @@ for seg in segs:
     vco_trigs = get_all_vco_triggers(files, seg)
     # plot VCO triggers in histogram
     plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
+
+make_html_page(segs, channel=params.channel)

@@ -9,6 +9,7 @@ from gwpy.segments import Segment
 from gwpy.plotter import HistogramPlot
 from glue.ligolw import table
 from vco_functions import *
+import markup
 
 
 def plot_name(channel, start, end, tag, format='png'):
@@ -110,3 +111,17 @@ def read_omicron_trigs(omicron_files, segment):
     times = trigs.get_peak()
     s = times.size
     return trigs, times, s
+
+
+def make_html_page(segs, channel='L1:GDS-CALIB_STRAIN'):
+    channel = channel.replace(':', '-')
+    page = markup.page()
+    page.init(title="VCO Histogram to Search for Whistles in %s" % channel)
+    page.div()
+    for seg in segs:
+        page.div()
+        page.img(src="%s_VCO_HIST-%d-%d.png" %
+                 (channel, int(seg[0]), int(seg[1])))
+        page.p("VCO Histogram")
+        page.div.close()
+    page.div.close()
