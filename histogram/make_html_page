@@ -33,20 +33,46 @@ def make_html_page(segs, st, et, ifo, list='channels.txt'):
 	channels.append(line.rstrip())
 
     page = markup.page()
-    page.init(title="VCO Histogram to Search for Whistles in %d-%d" % (int(segs[0][0]), int(segs[-1][1])))
-    page.div()
+    page.init(css=("main.css",
+                   "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"),
+	      title="VCO Histogram to Search for Whistles in %d-%d" % (int(segs[0][0]), int(segs[-1][1])))
+    page.div(class_="container")
     for channel in channels:
         channel = channel.replace('-','_')
         channel = channel.replace(':', '-')
-	page.div()
+	if ifo=="L1":
+	    page.div(class_="panel panel-success")
+	else:
+	    page.div(class_="panel panel-primary")
+	page.div(class_="panel-heading")
         page.h3("%s:%s" % (ifo,channel), align='center')
+	page.div.close()
+	page.div(class_="panel-body")
         for seg in segs:
-            page.div()
+	    page.div(class_="panel panel-warning")
+	    page.div(class_="panel-heading")
+	    page.h4("%d-%d" % (int(seg[0]), int(seg[1]) - int(seg[0])))
+	    page.div.close()
+	    page.div(class_="panel-body")
+            page.div(class_='col-md-6')
+	    page.a(href="%s-%s_VCO-HIST-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
             page.img(src="%s-%s_VCO-HIST-%d-%d.png" %
                      (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
-            page.div.close()
-	page.div.close()
-    page.div.close()
+	    page.a.close()
+            page.div.close() # img
+            page.div(class_='col-md-6')
+	    page.a(href="%s-%s_OMICRON-SCATTER-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
+            page.img(src="%s-%s_OMICRON-SCATTER-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
+	    page.a.close()
+            page.div.close() # img
+	    page.div.close() # panel body
+	    page.div.close() # panel
+	page.div.close()# body
+	page.div.close()# panel
+    page.div.close()# container
     outpage = '%d-%d.html' % (params.st, params.et)
     f = open(outpage,'w')
     print >> f, page

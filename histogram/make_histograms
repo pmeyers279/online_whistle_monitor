@@ -33,6 +33,7 @@ def parse_command_line():
     params, args = parser.parse_args()
     return params
 
+
 params = parse_command_line()
 flag = '%s:%s' % (params.ifo, params.flag)
 if not params.st and params.et:
@@ -42,17 +43,11 @@ segs = DataQualityFlag.query_dqsegdb(
 
 segs.write('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
 
-
 # seg = Segment(params.st, params.et)
 for seg in segs:
     # get list of files that contain omicron triggers
-    # for our times
-    files = get_omicron_files(
-        params.ifo, seg, channel=params.channel, trig_dir=params.trig_dir)
-    # get omicron triggers
     # and their times
-    vco_trigs = get_all_vco_triggers(files, seg)
+    vco_trigs, central_freqs, snrs = get_all_vco_triggers(params.ifo, seg, frames=params.frames)
     # plot VCO triggers in histogram
     plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
-
-make_html_page(segs, channel=params.channel)
+    plot_omicron_scatter(vco_trigs, central_freqs, snrs, seg, '%s:%s' % (params.ifo, params.channel))
