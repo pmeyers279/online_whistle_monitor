@@ -47,7 +47,7 @@ segs.write('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
 for seg in segs:
     # get list of files that contain omicron triggers
     # and their times
-    vco_trigs, central_freqs, snrs = get_all_vco_triggers(params.ifo, seg, frames=params.frames)
+    vco_trigs, central_freqs, snrs = get_all_vco_triggers(params.ifo, seg, frames=params.frames, channel=params.channel)
     # plot VCO triggers in histogram
     plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
     plot_omicron_scatter(vco_trigs, central_freqs, snrs, seg, '%s:%s' % (params.ifo, params.channel))
