@@ -64,6 +64,7 @@ def plot_vco_hist(vco_trigs, segment, channel):
     plot.set_ylabel('Rate [Hz]')
     plot.set_title(channel.replace('_', '\_') + ' omicron glitch histogram', fontsize=14)
     plot.suptitle(str(segment[0]) + '-' + str(segment[-1]))
+    ax = plot.gca()
     plot.savefig(png)
     plot.close()
     print('%s written' % png)
