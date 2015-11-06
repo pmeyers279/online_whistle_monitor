@@ -22,7 +22,7 @@ def parse_command_line():
         dest="channel", type=str, default="GDS-CALIB_STRAIN")
     parser.add_option(
         "--fit-vco", help="fit vco with imc-f or not (True or False)",
-        dest="fit", type=int, default=True)
+        dest="fit", action='store_true', default=False)
     parser.add_option(
         "--frames", help="read from frames", type=int, default=False)
     parser.add_option(
@@ -30,6 +30,8 @@ def parse_command_line():
         dest="trig_dir", default='/home/detchar/triggers/O1/')
     parser.add_option(
         "--flag", help="flag (without ifo tag)", type=str, default='DMT-ANALYSIS_READY:1')
+    parser.add_option(
+        "--save", help="save triggers or not", action='store_true', default=False)
     params, args = parser.parse_args()
     return params
 
@@ -38,16 +40,24 @@ params = parse_command_line()
 flag = '%s:%s' % (params.ifo, params.flag)
 if not params.st and params.et:
     raise ValueError('need to specify start and end times')
-segs = DataQualityFlag.query_dqsegdb(
-    flag, params.st, params.et, url='https://segments.ligo.org')
-
-segs.write('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
+try:
+    segs = DataQualityFlag.read('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
+except IOError:
+    print 'SEGMENTS file doesnt exist...making it now...'
+    segs = DataQualityFlag.query_dqsegdb(
+        flag, params.st, params.et, url='https://segments.ligo.org')
+    segs.write('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
 
 # seg = Segment(params.st, params.et)
 for seg in segs:
     # get list of files that contain omicron triggers
     # and their times
     vco_trigs, central_freqs, snrs = get_all_vco_triggers(params.ifo, seg, frames=params.frames, channel=params.channel)
+    if params.save:
+	final_array = []
+	for v,c,s in zip(vco_trigs, central_freqs, snrs):
+	    final_array.append((v,c,s))
+        np.save('TRIGGERS-%d-%d.npy' % (params.st, params.et - params.st), final_array)
     # plot VCO triggers in histogram
     plot_vco_hist(vco_trigs, seg, '%s:%s' % (params.ifo, params.channel))
     plot_omicron_scatter(vco_trigs, central_freqs, snrs, seg, '%s:%s' % (params.ifo, params.channel))
