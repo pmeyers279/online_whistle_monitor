@@ -2,21 +2,24 @@
 cd /home/meyers/tools/whistles/online_whistle_monitor/histogram/
 
 st=`lalapps_tconvert yesterday 00:00 UTC`
+#st=`lalapps_tconvert October 12 08:00 UTC`
+#st=`lalapps_tconvert September 14 00:00 UTC`
 #et=`tconvert today 00:00 UTC`
 et=`lalapps_tconvert today 00:00 UTC`
+#et=`lalapps_tconvert October 12 12:00 UTC`
+#st=`lalapps_tconvert September 15 00:00 UTC`
 
-yest=`tconvert -f %d%m%y $st`
-chans=/home/meyers/tools/whistles/online_whistle_monitor/histogram/channels.txt
+yest=`lalapps_tconvert -f %d%m%y $st`
+chans=/home/meyers/tools/whistles/online_whistle_monitor/histogram/channels2.txt
 
-export X509_USER_CERT="/home/meyers/robotCert/stampPEMSubmit_ldas
-      -pcdev2.ligo.caltech.edu-cert.pem"
+export X509_USER_CERT="/home/meyers/robotCert/stampPEMSubmit_ldas-pcdev2.ligo-la.caltech.edu-cert.pem"
 export X509_USER_KEY="/home/meyers/robotCert/robot.key.pem"
-
 
 
 echo "Running from "$st"-"$et
 while IFS='' read -r line || [[ -n "$line" ]]; do
-    ./make_histograms -s $st -e $et -o L1 --frames 1 -c $line
+    echo "./make_histograms -s $st -e $et -o L1 --frames 1 -c $line --save"
+    ./make_histograms -s $st -e $et -o L1 --frames 1 -c $line --save
 done < $chans
 
 ./make_html_page -s $st -e $et -c $chans -o L1
@@ -25,3 +28,4 @@ mkdir -p ~/public_html/whistle_monitor/$yest/
 mv ./$st-$et.html ~/public_html/whistle_monitor/$yest/$yest.html
 mv ./*.png ~/public_html/whistle_monitor/$yest/
 mv ./*.xml.gz ~/public_html/whistle_monitor/$yest/
+mv ./*.npy ~/public_html/whistle_monitor/$yest/
