@@ -23,7 +23,7 @@ def plot_name(channel, start, end, tag, format='png'):
 
 
 def get_all_vco_triggers(ifo, seg, frames=False, fit=True,
-                         channel='GDS-CALIB_STRAIN'):
+                         channel='GDS-CALIB_STRAIN', file=None):
     st = int(seg[0])
     et = int(seg[1])
     st2 = st
@@ -32,7 +32,12 @@ def get_all_vco_triggers(ifo, seg, frames=False, fit=True,
     amps = []
     while (et > st2):
 	dur = min(et - st2, 1000)
-        vco = generate_fast_vco(ifo, Segment(st2, st2+dur), frames=frames, fit=fit)
+	if file:
+	    vco = TimeSeries.read(file)
+	    vco = vco + 76e6
+	else:
+	    vco = generate_fast_vco(ifo, Segment(st2, st2+dur), frames=frames, fit=fit)
+	
         trigs = SnglBurstTable.fetch("%s:%s" % (ifo, channel), 'omicron', st2, st2+dur,
 				 filt=lambda x: st2 <= x.get_peak() < st2+dur)
         if First:
@@ -46,12 +51,13 @@ def get_all_vco_triggers(ifo, seg, frames=False, fit=True,
 
     central_freqs = trigs2.get_column('peak_frequency')
     snrs = trigs2.get_column('snr')
+    sts = trigs2.get_column('time_peak')
     
     amps = np.asarray(amps)
     amps = amps[~(np.isnan(amps))]
     central_freqs = central_freqs[~(np.isnan(amps))]
     snrs = snrs[~(np.isnan(amps))]
-    return amps, central_freqs, snrs
+    return amps, central_freqs, snrs, sts
 
 
 def plot_vco_hist(vco_trigs, segment, channel):
@@ -80,8 +86,10 @@ def plot_omicron_scatter(vco_trigs, central_freqs, snrs, segment, channel):
     plt.title('%s Omicron Scatter' % channel.replace('_','\_'), fontsize=14)
     plt.suptitle('%d-%d' % (start, end))
     ax = plt.gca()
-    ax.set_ylim(0,8192)
+    ax.set_ylim(0,max(central_freqs))
     plt.savefig(png)
+    plt.close()
+    print('%s written' % png)
 
 
 def get_vco_trigs(vco, trigs, channel='GDS-CALIB_STRAIN'):
