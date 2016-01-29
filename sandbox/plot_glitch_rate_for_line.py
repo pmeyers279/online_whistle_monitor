@@ -10,8 +10,9 @@ rc('text', usetex=True)
 
 # list of expected lines for O1
 lines = [(2350, 2450), (2750, 2850), (4200, 4300), (5500, 5700)]
-vco_lines = [(13, 21), (54.5, 62.5)]
-freq_cutoffs = [8192, 4096, 2048]
+#vco_lines = [(13, 21), (54.5, 62.5)]
+vco_lines = [(-214,-206),(-175,-170), (-142,-136), (-114,-110), (-80,-70), (-50,-30)]
+freq_cutoffs = [8192, 4096]#, 2048]
 
 
 def parse_command_line():
@@ -102,15 +103,13 @@ for i in range(len(freq_cutoffs)):
     bin_centres = (bins_tot[1:] + bins_tot[:-1]) / 2.
     # p0 is the initial guess for the fitting coefficients (A, mu and sigma
     # above)
-    p0 = [1., 0., 1.]
+    p0 = [1,np.median(VCO_line_masked), (np.max(VCO_line_masked) - np.min(VCO_line_masked)) / 4.]
     coeff, var_matrix = curve_fit(gauss, bin_centres, n_tot, p0=p0)
     # Get the fitted curve
     hist_fit = gauss(bin_centres, *coeff)
     for vco_line in vco_lines:
         expected_rate[freq_cutoffs[i]][vco_line] = np.interp((vco_line[0] + vco_line[1]) / 2.,
                                                              bin_centres, hist_fit)
-        print ((vco_line[0] + vco_line[1]) / 2.)
-        print expected_rate[freq_cutoffs[i]][vco_line] / float(dur)
         plt.scatter(
             (vco_line[0] + vco_line[1]) /
             2., expected_rate[freq_cutoffs[i]][vco_line] / float(dur),
@@ -127,8 +126,8 @@ ax2 = plt.gca()
 handles, labels = ax2.get_legend_handles_labels()
 ax2.legend(handles, labels)
 ax2.set_yscale('log')
-plt.ylim((1e-5, 1))
-plt.savefig('GDS-CALIB_STRAIN-VCO-HIST-%d-%d' % (st, dur))
+plt.ylim((1./(2*dur), 1))
+plt.savefig('%s-VCO-HIST-%d-%d' % (channel, st, dur))
 plt.close()
 
 
@@ -144,26 +143,10 @@ for vco_line in vco_lines:
     fig = plt.figure()
     # plt.bar(bins[:-1], rate, width=(bins[1] - bins[0]),
     #        facecolor='blue', alpha=0.3)
+    plt.subplot(211)
+    f, ax = plt.subplots(2, 1)
     for i in range(len(freq_cutoffs)):
-        # histogram ALL triggers in range
-        # VCO_line_masked = vco_line_mask(VCO_vals, vco_lines, prior_mask=np.multiply(idxs_final,
-        #                                                                             (central_freqs < freq_cutoffs[i])))
-        # n_tot, bins_tot = np.histogram(VCO_line_masked, 75)
-        # bin_centres = (bins_tot[1:] + bins_tot[:1]) / 2.
-        # p0 is the initial guess for the fitting coefficients (A, mu and sigma
-        # above)
-        # p0 = [1., 0., 1.]
-        # coeff, var_matrix = curve_fit(gauss, bin_centres, n_tot, p0=p0)
-        # Get the fitted curve
-        # hist_fit = gauss(bin_centres, *coeff)
-        # expected_rate = np.interp(
-        #     (vco_line[0] + vco_line[1]) / 2., bin_centres, hist_fit)
-        # print ((vco_line[0] + vco_line[1]) / 2.)
-        # print expected_rate / float(dur)
-        # Plot expected total rate based on gaussian fit
-        print ((vco_line[0] + vco_line[1]) / 2.)
-        print expected_rate[freq_cutoffs[i]][vco_line] / float(dur)
-        plt.scatter(
+        ax[0].scatter(
             (bins[0] + bins[1]) / 2,
             expected_rate[freq_cutoffs[i]][vco_line] / float(dur),
             s=64, c=colors[i])
@@ -175,17 +158,19 @@ for vco_line in vco_lines:
         rate = n / float(dur)
         rate = np.cumsum(rate[::-1])[::-1]
         # plot cumulative rate vs. SNR
-        plt.bar(bins[:-1], rate, width=(bins[1] - bins[0]),
+        ax[0].bar(bins[:-1], rate, width=(bins[1] - bins[0]),
                 edgecolor=colors[i], facecolor=colors[i],
                 label='Central Freqs $\leq$ %d' % freq_cutoffs[i], alpha=0.2)
-    ax = plt.gca()
-    handles, labels = ax.get_legend_handles_labels()
-    plt.xlabel('Omicron SNR')
-    plt.ylabel('Rate [Hz]')
-    plt.title('Omicron glitch rates contributions for VCO Line %4.2f - %4.2f MHz' %
+    handles, labels = ax[0].get_legend_handles_labels()
+    ax[0].set_xlabel('Omicron SNR')
+    ax[0].set_ylabel('Rate [Hz]')
+    ax[0].set_title('Omicron glitch rates contributions for VCO Line %4.2f - %4.2f MHz' %
               (79 + vco_line[0] / 100., 79 + vco_line[1] / 100.))
-    ax.legend(handles, labels)
-    ax.set_yscale('log')
-    plt.savefig('GDS-CALIB_STRAIN-RATES-%s-%d-%d' %
-                (str(int((vco_line[1] + vco_line[0]) / 2.)), st, dur))
+    ax[0].legend(handles, labels)
+    ax[0].set_yscale('log')
+    ax[1].scatter(VCO_vals, central_freqs,c=np.log10(omicron_snr))
+    ax[1].set_xlim((vco_line[0],vco_line[1]))
+    ax[1].set_ylim((params.flow, max(central_freqs[np.multiply(VCO_vals >vco_line[0], VCO_vals < vco_line[1])])))
+    plt.savefig('%s-%s-%d-%d' %
+                (channel, str(int((vco_line[1] + vco_line[0]) / 2.)), st, dur))
     plt.close()
