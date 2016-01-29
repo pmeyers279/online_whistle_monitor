@@ -1,0 +1,56 @@
+#!/usr/bin/env python
+from vco_functions import *
+from trigger_functions import *
+import optparse
+from gwpy.segments import (Segment, DataQualityFlag)
+
+
+def parse_command_line():
+    """
+    parse command line
+    """
+    parser = optparse.OptionParser()
+    parser.add_option(
+        "-o", "--ifo", help="interferometer, default is L1", dest="ifo",
+        type=str, default="L1")
+    parser.add_option(
+        "-s", help="start time", dest="st", type=int, default=None)
+    parser.add_option(
+        "-e", help="end time", dest="et", type=int, default=None)
+    parser.add_option(
+        "-c", "--channel", help="channel for which user wants histogram.",
+        dest="channel", type=str, default="GDS-CALIB_STRAIN")
+    parser.add_option(
+        "--fit-vco", help="fit vco with imc-f or not (True or False)",
+        dest="fit", action='store_true', default=False)
+    parser.add_option(
+        "--frames", help="read from frames", type=int, default=True)
+    parser.add_option(
+        "--flag", help="flag (without ifo tag)", type=str, default='DMT-ANALYSIS_READY:1')
+    parser.add_option(
+        "--save", help="save triggers or not", action='store_true', default=False)
+    params, args = parser.parse_args()
+    return params
+
+
+params = parse_command_line()
+flag = '%s:%s' % (params.ifo, params.flag)
+if not params.st and params.et:
+    raise ValueError('need to specify start and end times')
+try:
+    segs = DataQualityFlag.read('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
+except IOError:
+    print 'SEGMENTS file doesnt exist...making it now...'
+    segs = DataQualityFlag.query_dqsegdb(
+        flag, params.st, params.et, url='https://segments.ligo.org')
+    segs.write('SEGMENTS-%d-%d.xml.gz' % (params.st, params.et - params.st))
+
+# seg = Segment(params.st, params.et)
+for seg in segs:
+    # get list of files that contain omicron triggers
+    # and their times
+    vco_trigs, central_freqs, snrs, sts= get_all_vco_triggers(params.ifo, seg, frames=params.frames, channel=params.channel)
+    final_array = []
+    for v,c,s,st in zip(vco_trigs, central_freqs, snrs, sts):
+        final_array.append((v,c,s,st))
+    np.save('%s-TRIGGERS-%d-%d.npy' % (params.channel, int(seg[0]), int(seg[1]) - int(seg[0])), final_array)

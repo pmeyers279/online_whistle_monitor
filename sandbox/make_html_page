@@ -1,0 +1,135 @@
+#!/usr/bin/env python
+import markup
+import optparse
+from gwpy.segments import (Segment, DataQualityFlag)
+
+
+def parse_command_line():
+    """
+    parse command line
+    """
+    parser = optparse.OptionParser()
+    parser.add_option(
+        "-o", "--ifo", help="interferometer, default is L1", dest="ifo",
+        type=str, default="L1")
+    parser.add_option(
+        "-s", help="start time", dest="st", type=int, default=None)
+    parser.add_option(
+        "-e", help="end time", dest="et", type=int, default=None)
+    parser.add_option(
+        "-c", "--channel-list", help="channel for which user wants histogram.",
+        dest="list", type=str, default="channles.txt")
+    parser.add_option(
+        "--flag", help="flag (without ifo tag)", type=str, default='DMT-ANALYSIS_READY:1')
+    params, args = parser.parse_args()
+    return params
+
+
+
+def make_html_page(segs, st, et, ifo, list='channels.txt'):
+    f = open(list,'r')
+    channels = []
+    for line in f:
+	channels.append(line.rstrip())
+
+    page = markup.page()
+    page.init(css=("main.css",
+                   "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css"),
+	      title="VCO Histogram to Search for Whistles in %d-%d" % (int(segs[0][0]), int(segs[-1][1])))
+    page.div(class_="container")
+    page.div(class_="jumbotron")
+    page.h2("Whistle Monitoring")
+    page.p("see bottom of page for description of plots, parameters, and channels")
+    page.p("plots are grouped first by channel and then by lock")
+    page.div.close()
+	
+    for channel in channels:
+        channel = channel.replace('-','_')
+        channel = channel.replace(':', '-')
+	if ifo=="L1":
+	    page.div(class_="panel panel-success")
+	else:
+	    page.div(class_="panel panel-primary")
+	page.div(class_="panel-heading")
+        page.h3("%s:%s" % (ifo,channel), align='center')
+	page.div.close()
+	page.div(class_="panel-body")
+        for seg in segs:
+	    page.div(class_="panel panel-warning")
+	    page.div(class_="panel-heading")
+	    page.h4("%d-%d" % (int(seg[0]), int(seg[1]) - int(seg[0])))
+	    page.div.close()
+	    page.div(class_="panel-body")
+            page.div(class_='col-md-6')
+	    page.a(href="%s-%s_VCO-HIST-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
+            page.img(src="%s-%s_VCO-HIST-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
+	    page.a.close()
+            page.div.close() # img
+            page.div(class_='col-md-6')
+	    page.a(href="%s-%s_OMICRON-SCATTER-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
+            page.img(src="%s-%s_OMICRON-SCATTER-%d-%d.png" %
+                     (ifo, channel, int(seg[0]), int(seg[1]) - int(seg[0])), align='center')
+	    page.a.close()
+            page.div.close() # img
+	    page.div.close() # panel body
+	    page.div.close() # panel
+	page.div.close()# body
+	page.div.close()# panel
+    page.div(class_="panel panel-danger")
+    page.div(class_="panel-heading")
+    page.h4("Parameters and Channels")
+    page.div.close()
+    page.div(class_="panel-body")
+    page.table(class_="table")
+    page.td('Channels',rowspan=len(channels) + 1)
+    for channel in channels:
+	page.tr()
+	page.td()
+        page.p("%s:%s" % (ifo, channel))
+        page.td.close()
+ 	page.tr.close()
+    page.table.close()
+    page.div.close() # parameter table
+    page.div.close()
+
+    page.div(class_="panel panel-danger")
+    page.div(class_="panel-heading")
+    page.h4("Segments")
+    page.div.close()
+    page.div(class_="panel-body")
+    page.table(class_="table")
+    page.tr()
+    page.td('Segment Flag')
+    page.td(params.flag)
+    page.tr.close()
+    page.table.close()
+    page.td('Segments',rowspan=len(channels) + 1, size='2em')
+    page.div(class_="well well-sm")
+    page.p('start,end')
+    for seg in segs:
+        page.p('%d,%d'% (int(seg[0]),int(seg[1])))
+    page.div.close()
+    page.div.close() # parameter table
+    page.div.close()
+
+    #page.tr()
+    #page.td('Segments')
+    #page.tr.close()
+
+    page.div.close()# container
+    outpage = '%d-%d.html' % (params.st, params.et)
+    f = open(outpage,'w')
+    print >> f, page
+    f.close()
+
+params = parse_command_line()
+flag = '%s:%s' % (params.ifo, params.flag)
+if not params.st and params.et:
+    raise ValueError('need to specify start and end times')
+segs = DataQualityFlag.query_dqsegdb(
+    flag, params.st, params.et, url='https://segments.ligo.org')
+
+make_html_page(segs, params.st, params.et, params.ifo, list=params.list)

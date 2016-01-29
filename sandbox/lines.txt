@@ -1,0 +1,3 @@
+# kHz from 79MHz    scaling factor
+17 2
+58.5 2
