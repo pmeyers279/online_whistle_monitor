@@ -30,7 +30,7 @@ def generate_fast_vco(ifo, segment, frames=False, fit=True):
     if frames:
         connection = datafind.GWDataFindHTTPConnection()
         cache = connection.find_frame_urls(
-            ifo[0], '%s_R' % ifo, st, et, urltype='file')
+            ifo[0], '%s_R' % ifo, st, et + 1, urltype='file')
         if fit:
             imc = TimeSeries.read(cache, chan2_pat % ifo, st, et)
         else:
@@ -90,7 +90,7 @@ def fit_with_imc(data, imc):
     coeffs0 = np.interp(samp_times, times, coeffs[:, 0])
     coeffs1 = np.interp(samp_times, times, coeffs[:, 1])
 
-    vco_interp = coeffs0 * imc.data + coeffs1
+    vco_interp = coeffs0 * imc.value + coeffs1
     return vco_interp
 
 
